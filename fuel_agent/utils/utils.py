@@ -335,3 +335,50 @@ def unblacklist_udev_rules(udev_rules_dir, udev_rename_substr):
 
 def udevadm_settle():
     execute('udevadm', 'settle', '--quiet', check_exit_code=[0])
+
+
+def parse_kernel_cmdline():
+    """Parse linux kernel command line"""
+    with open('/proc/cmdline', 'rt') as f:
+        cmdline = f.read()
+    parameters = {}
+    for p in cmdline.split():
+        name, _, value = p.partition('=')
+        parameters[name] = value
+    return parameters
+
+
+def get_interface_ip(mac_addr):
+    """Get IP address of interface with mac_addr"""
+    # NOTE(yuriyz): current limitations IPv4 addresses only and one IP per
+    # interface.
+    ip_pattern = re.compile('inet ([\d\.]+)/')
+    out, err = execute('ip', 'addr', 'show', 'scope', 'global')
+    lines = out.splitlines()
+    for num, line in enumerate(lines):
+        if mac_addr in line:
+            try:
+                ip_line = lines[num + 1]
+            except IndexError:
+                return
+            match = ip_pattern.search(ip_line)
+            if match:
+                return match.group(1)
+
+
+def write_mime_multipart(output_path, sources, type_='text', gzip=False):
+    files_cmds = ['{path}:{type}/{subtype}'.format(path=path, type=type_,
+                                                   subtype=subtype)
+                  for path, subtype in sources]
+
+    cmd = [
+        'write-mime-multipart',
+        '--output={0}'.format(output_path),
+        '--gzip' if gzip else '',
+    ]
+    return execute(cmd + files_cmds)
+
+
+def generate_iso_image(output_path, sources):
+    return execute('genisoimage', '-output', output_path, '-volid', 'cidata',
+                   '-joliet', '-rock', *sources)

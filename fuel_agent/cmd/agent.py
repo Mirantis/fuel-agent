@@ -55,6 +55,10 @@ def configdrive():
     main(['do_configdrive'])
 
 
+def cloudinitconfig():
+    main(['do_generate_cloud_config'])
+
+
 def bootloader():
     main(['do_bootloader'])
 

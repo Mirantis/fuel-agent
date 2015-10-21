@@ -251,8 +251,10 @@ class Manager(object):
 
         self.do_get_fstab()
 
-    def do_configdrive(self):
-        LOG.debug('--- Creating configdrive (do_configdrive) ---')
+    def do_generate_cloud_config(self, make_iso=False):
+        LOG.debug(
+            '--- Generating configdrive configs (do_generate_cloud_config) ---'
+        )
         cc_output_path = os.path.join(CONF.tmp_path, 'cloud_config.txt')
         bh_output_path = os.path.join(CONF.tmp_path, 'boothook.txt')
         # NOTE:file should be strictly named as 'user-data'
@@ -280,13 +282,30 @@ class Manager(object):
             md_output_path
         )
 
-        utils.execute('write-mime-multipart', '--output=%s' % ud_output_path,
-                      '%s:text/cloud-boothook' % bh_output_path,
-                      '%s:text/cloud-config' % cc_output_path)
-        utils.execute('genisoimage', '-output', CONF.config_drive_path,
-                      '-volid', 'cidata', '-joliet', '-rock', ud_output_path,
-                      md_output_path)
+        utils.write_mime_multipart(
+            ud_output_path,
+            (
+                (bh_output_path, 'cloud-boothook'),
+                (cc_output_path, 'cloud-config'),
+            ))
 
+        if make_iso:
+            utils.generate_iso_image(
+                CONF.config_drive_path,
+                (ud_output_path, md_output_path)
+            )
+
+        return ud_output_path
+
+    def do_configdrive(self):
+        LOG.debug('--- Creating configdrive (do_configdrive) ---')
+        if CONF.prepare_configdrive:
+            self.do_generate_cloud_config(make_iso=True)
+
+        if CONF.prepare_configdrive or os.path.isfile(CONF.config_drive_path):
+            self._add_configdrive_image()
+
+    def _add_configdrive_image(self):
         configdrive_device = self.driver.partition_scheme.configdrive_device()
         if configdrive_device is None:
             raise errors.WrongPartitionSchemeError(
