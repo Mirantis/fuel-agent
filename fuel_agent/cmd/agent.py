@@ -19,7 +19,7 @@ from oslo_serialization import jsonutils as json
 import six
 
 from fuel_agent import manager as manager
-from fuel_agent.openstack.common import log as logging
+from oslo_log import log as logging
 from fuel_agent import version
 
 cli_opts = [

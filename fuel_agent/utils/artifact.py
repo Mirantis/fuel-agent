@@ -22,7 +22,7 @@ from oslo_config import cfg
 import six
 
 from fuel_agent import errors
-from fuel_agent.openstack.common import log as logging
+from oslo_log import log as logging
 from fuel_agent.utils import utils
 
 LOG = logging.getLogger(__name__)

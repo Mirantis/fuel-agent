@@ -21,7 +21,7 @@ import yaml
 from oslo_config import cfg
 
 from fuel_agent import errors
-from fuel_agent.openstack.common import log as logging
+from oslo_log import log as logging
 from fuel_agent.utils import artifact as au
 from fuel_agent.utils import build as bu
 from fuel_agent.utils import fs as fu

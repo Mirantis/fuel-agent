@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from fuel_agent import errors
-from fuel_agent.openstack.common import log as logging
+from oslo_log import log as logging
 from fuel_agent.utils import utils
 
 LOG = logging.getLogger(__name__)
