@@ -18,9 +18,10 @@ from oslo_config import cfg
 from oslo_serialization import jsonutils as json
 import six
 
-from fuel_agent import manager as manager
+from fuel_agent import manager
 from fuel_agent.openstack.common import log as logging
 from fuel_agent import version
+from fuel_agent.actions.partitioning import PartitioningAction
 
 cli_opts = [
     cfg.StrOpt(
@@ -67,6 +68,22 @@ def build_image():
     main(['do_build_image'])
 
 
+def newpartitioning():
+    run_action(PartitioningAction)
+
+
+def run_action(action):
+    CONF(sys.argv[1:], project='fuel-agent',
+         version=version.version_info.release_string())
+
+    if CONF.input_data:
+        data = json.loads(CONF.input_data)
+    else:
+        with open(CONF.input_data_file) as f:
+            data = json.load(f)
+    action(data).run()
+
+
 def print_err(line):
     sys.stderr.write(six.text_type(line))
     sys.stderr.write('\n')
@@ -101,7 +118,6 @@ def main(actions=None):
                 getattr(mgr, action)()
     except Exception as exc:
         handle_exception(exc)
-
 
 if __name__ == '__main__':
     main()

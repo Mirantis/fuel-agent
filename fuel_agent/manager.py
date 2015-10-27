@@ -123,7 +123,7 @@ cli_opts = [
     cfg.StrOpt(
         'data_driver',
         default='nailgun',
-        help='Data driver'
+        help='Data driver',
     ),
     cfg.StrOpt(
         'image_build_dir',
@@ -417,23 +417,24 @@ class Manager(object):
         def get_device_uuid(device):
             return utils.execute(
                 'blkid', '-o', 'value', '-s', 'UUID', device,
-                check_exit_code=[0])
-            [0].strip()
+                check_exit_code=[0])[0].strip()
 
-            for fs in self.driver.partition_scheme.fss:
-                uuid = get_device_uuid(fs.device)
-                options = (
-                    "defaults",
-                )
-                if fs.mount == '/':
-                    options.append('errors=panic')
+        fstab = ""
+        for fs in self.driver.partition_scheme.fss:
+            uuid = get_device_uuid(fs.device)
+            options = (
+                "defaults",
+            )
+            if fs.mount == '/':
+                options.append('errors=panic')
 
-                print("UUID={uuid} {mount} {type} {options} 0 0".format(
-                    uuid=uuid,
-                    mount=fs.mount,
-                    type=fs.type,
-                    options=','.join(options)
-                ))
+            print("UUID={uuid} {mount} {type} {options} 0 0".format(
+                uuid=uuid,
+                mount=fs.mount,
+                type=fs.type,
+                options=','.join(options)
+            ))
+        print(fstab)
 
     def do_bootloader(self):
         LOG.debug('--- Installing bootloader (do_bootloader) ---')
