@@ -13,25 +13,18 @@
 # limitations under the License.
 
 import os
-import shutil
-import signal
-import tempfile
-import yaml
 
 from oslo_config import cfg
 
 from fuel_agent import errors
 from fuel_agent.openstack.common import log as logging
-from fuel_agent.utils import artifact as au
-from fuel_agent.utils import build as bu
 from fuel_agent.utils import fs as fu
-from fuel_agent.utils import grub as gu
 from fuel_agent.utils import lvm as lu
 from fuel_agent.utils import md as mu
 from fuel_agent.utils import partition as pu
 from fuel_agent.utils import utils
 
-from fuel_agent.actions.base import BaseActionDriver
+from fuel_agent.actions.base import BaseAction
 
 
 CONF = cfg.CONF
@@ -39,38 +32,15 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-class PartitioningAction(BaseActionDriver):
+class PartitioningAction(BaseAction):
 
     def __init__(self, data):
         self.datadriver = utils.get_driver(CONF.data_driver)(data)
 
     def run(self):
         self.do_partitioning()
-
-    def do_get_fstab(self):
-
-        def get_device_uuid(device):
-            return utils.execute(
-                'blkid', '-o', 'value', '-s', 'UUID', device,
-                check_exit_code=[0])
-            [0].strip()
-
-        fstab = ""
-        for fs in self.driver.partition_scheme.fss:
-            uuid = get_device_uuid(fs.device)
-            options = (
-                "defaults",
-            )
-            if fs.mount == '/':
-                options.append('errors=panic')
-
-            print("UUID={uuid} {mount} {type} {options} 0 0".format(
-                uuid=uuid,
-                mount=fs.mount,
-                type=fs.type,
-                options=','.join(options)
-            ))
-        print(fstab)
+        with self.chroot() as chroot_path:
+            self.do_bootloader(chroot_path)
 
     def do_clean_filesystems(self):
         # NOTE(agordeev): it turns out that only mkfs.xfs needs '-f' flag in
@@ -177,5 +147,3 @@ class PartitioningAction(BaseActionDriver):
                             if img.target_device == fs.device]
             if not found_images:
                 fu.make_fs(fs.type, fs.options, fs.label, fs.device)
-
-        self.do_get_fstab()

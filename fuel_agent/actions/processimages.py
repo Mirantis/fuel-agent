@@ -12,15 +12,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import abc
-
-import six
-
-
-@six.add_metaclass(abc.ABCMeta)
-class BaseAction(object):
-    datadriver = None
-
-    @abc.abstractmethod
-    def run(self):
-        "Abstract method used for running an action"

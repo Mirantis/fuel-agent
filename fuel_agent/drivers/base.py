@@ -55,4 +55,20 @@ class BasePartitionigDriver(object):
 
     @abc.abstractproperty
     def partition_scheme(self):
-        """Retruns instance of PartionScheme object"""
+        """Returns instance of PartionScheme object"""
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseConfigDriveDriver(object):
+
+    @abc.abstractproperty
+    def configdrive_scheme(self):
+        """Returns instance of ConfigDriveScheme object"""
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseImageDriver(object):
+
+    @abc.abstractproperty
+    def configdrive_scheme(self):
+        """Returns instance of ImageScheme object"""
