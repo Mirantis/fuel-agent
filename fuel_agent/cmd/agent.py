@@ -81,10 +81,12 @@ def handle_exception(exc):
 
 
 def main(actions=None):
+    logging.register_options(CONF)
+
     CONF(sys.argv[1:], project='fuel-agent',
          version=version.version_info.release_string())
 
-    logging.setup('fuel-agent')
+    logging.setup(CONF, 'fuel-agent')
     LOG = logging.getLogger(__name__)
 
     try:
