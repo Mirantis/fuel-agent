@@ -192,7 +192,7 @@ def stop_chrooted_processes(chroot, signal=sig.SIGTERM,
 
     for i in six.moves.range(attempts):
         running_processes = get_running_processes()
-        if not running_processes:
+        if not running_processes or running_processes == ['kernel']:
             LOG.debug('There are no running processes in %s ', chroot)
             return True
         for p in running_processes:
@@ -298,7 +298,7 @@ def deattach_loop(loop, check_exit_code=[0]):
 def shrink_sparse_file(filename):
     """Shrinks file to its size of actual data. Only ext fs are supported."""
     utils.execute('e2fsck', '-y', '-f', filename)
-    utils.execute('resize2fs', '-F', '-M', filename)
+    utils.execute('resize2fs', '-M', filename)
     data = hu.parse_simple_kv('dumpe2fs', filename)
     block_count = int(data['block count'])
     block_size = int(data['block size'])
