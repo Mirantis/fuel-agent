@@ -749,6 +749,11 @@ class Manager(object):
                 # NOTE(kozhukalov): implement abstract publisher
                 LOG.debug('Moving image file to the final location: %s',
                           img_containerized)
+
+                directory = os.path.dirname(img_containerized)
+                if not os.path.exists(directory):
+                    os.makedirs(directory)
+
                 shutil.move(img_tmp_containerized, img_containerized)
 
                 container_size = os.path.getsize(img_containerized)
